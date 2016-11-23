@@ -60,29 +60,6 @@ function allocate_data (){
 	clear_data();
 }
 
-
-function pre_display (){
-	var base = d3.select("#vis");
-	
-	var chart = base.append("canvas")
-		.attr("width", win_x)
-		.attr("height", win_y)
-		;
-	
-	var context = chart.node().getContext("2d");
-	
-	// Create an in memory only element of type 'custom'
-	var detachedContainer = document.createElement("custom");
-	
-	// Create a d3 selection for the detached container. We won't
-	// actually be attaching it to the DOM.
-	var dataContainer = d3.select(detachedContainer);
-}
-
-function post_display (){
-	glutSwapBuffers ();
-}
-
 function draw_velocity ()
 {
 	let x, y, h;
@@ -222,47 +199,22 @@ function idle_func(){
 	get_from_UI ( dens_prev, u_prev, v_prev );
 	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
-
-	glutSetWindow ( canvas );
-	glutPostRedisplay ();
 }
 
-function display_func (){
-	pre_display ();
-	
-	if(dvel){
-		draw_velocity ();
+var loop = null;
+function Start(){
+	if(!loop){
+		loop = setInterval(MainLoop, 10);
 	}
-	else{
-		draw_density ();
-	}
-	
-	post_display ();
 }
 
+function Stop(){
+	clearInterval(loop);
+	loop = null;
+}
 
-
-function open_glut_window(){
-	glutInitDisplayMode ( GLUT_RGBA | GLUT_DOUBLE );
-	
-	glutInitWindowPosition ( 0, 0 );
-	glutInitWindowSize ( win_x, win_y );
-	canvas = glutCreateWindow ( "Alias | wavefront" );
-	
-	glClearColor ( 0.0, 0.0, 0.0, 1.0 );
-	glClear ( GL_COLOR_BUFFER_BIT );
-	glutSwapBuffers ();
-	glClear ( GL_COLOR_BUFFER_BIT );
-	glutSwapBuffers ();
-	
-	pre_display ();
-	
-	glutKeyboardFunc ( key_func );
-	glutMouseFunc ( mouse_func );
-	glutMotionFunc ( motion_func );
-	glutReshapeFunc ( reshape_func );
-	glutIdleFunc ( idle_func );
-	glutDisplayFunc ( display_func );
+function Reset(){
+	clear_data();
 }
 
 
@@ -272,11 +224,30 @@ function open_glut_window(){
   ----------------------------------------------------------------------
 */
 
-function main ()
-{
+function MainLoop(){
+}
 
+function init(){
 	dvel = 0;
-
+	
 	allocate_data();
-	clear_data();
+	
+	win_x = 512;
+	win_y = 512;
+	canvase= d3.select("#vis");
+	
+	var chart = base.append("canvas")
+		.attr("width", win_x)
+		.attr("height", win_y)
+		;
+	
+	var context = chart.node().getContext("2d");
+	
+	// Create an in memory only element of type 'custom'
+	var detachedContainer = document.createElement("custom");
+	
+	// Create a d3 selection for the detached container. We won't
+	// actually be attaching it to the DOM.
+	var dataContainer = d3.select(detachedContainer);
+
 }

@@ -4,7 +4,7 @@
  
  <script src="fluiddynamics.js"></script>
  <script src="demo.js"></script>
- 
+  
  <style>
 	body{
 		font-family:sans-serif;
@@ -16,31 +16,46 @@
 	}
  </style>
 </head>
-<body>
+<body onload='init();'>
 <p>How to use this demo:</p>
-<ul>
- <li>Add densities with the right mouse button
- <li>Add velocities with the left mouse button and dragging the mouse\n" );
- <li>Toggle density/velocity display with the 'v' key\n" );
- <li>Clear the simulation by pressing the 'c' key\n" );
- <li>Quit by pressing the 'q' key\n" );
-</ul>
-<form onsubmit='main(); return false;' >
- <label>grid resolution</label>
- <input type='text' name='N' value='64' />
- <label>time step</label>
- <input type='text' name='dt' value='0.1' />
- <label>diffusion rate of the density</label>
- <input type='text' name='diff' value='0' />
+<form onsubmit='return false;' >
+ <ul>
+  <li>Add densities with the right mouse button</li>
+  <li>Add velocities with the left mouse button and dragging the mouse</li>
+ </ul>
+ <div>
+  <label>grid resolution</label>
+  <input type='text' name='N' value='64' />
+ </div>
+ <div>
+  <label>time step</label>
+  <input type='text' name='dt' value='0.1' />
+ </div>
+ <div>
+  <label>diffusion rate of the density</label>
+  <input type='text' name='diff' value='0' />
+ </div>
+ <div>
  <label>viscosity of the fluid</label>
- <input type='text' name='visc' value='0' />
- <label>scales the mouse movement that generate a force</label>
- <input type='text' name='force' value='5' />
- <label>amount of density that will be deposited</label>
- <input type='text' name='source' value='100' />
+  <input type='text' name='visc' value='0' />
+  </div>
+ <div>
+  <label>scales the mouse movement that generate a force</label>
+  <input type='text' name='force' value='5' />
+ </div>
+ <div>
+  <label>amount of density that will be deposited</label>
+  <input type='text' name='source' value='100' />
+ </div>
+ <div>
+  <input type='checkbox' name='dvel' />Toggle density/velocity
+ </div>
  <hr />
- <input type='submit' />
+ <button type='button' onclick='Start();'>Start</button>
+ <button type='button' onclick='Stop();'>Stop</button>
+ <button type='button' onclick='Reset();'>Reset</button>
 </form>
 <div id='vis'></div>
+
 </body>
 </html>
