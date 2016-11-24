@@ -17,45 +17,48 @@
  </style>
 </head>
 <body onload='init();'>
-<p>How to use this demo:</p>
-<form onsubmit='return false;' >
- <ul>
-  <li>Add densities with the right mouse button</li>
-  <li>Add velocities with the left mouse button and dragging the mouse</li>
- </ul>
- <div>
-  <label>grid resolution</label>
-  <input type='text' name='N' value='64' />
- </div>
- <div>
-  <label>time step</label>
-  <input type='text' name='dt' value='0.1' />
- </div>
- <div>
-  <label>diffusion rate of the density</label>
-  <input type='text' name='diff' value='0' />
- </div>
- <div>
- <label>viscosity of the fluid</label>
-  <input type='text' name='visc' value='0' />
+<form onsubmit='return false;' oninput='GetFormValues(this);'>
+ <details style='position:fixed;top:0;left:0;right:0;background-color:white;'>
+  <summary style='padding:0.5em;'>
+   <button type='button' onclick='Start();'>Start</button>
+   <button type='button' onclick='Stop();'>Stop</button>
+   <button type='button' onclick='Reset();'>Reset</button>
+  </summary>
+  <p>How to use this demo:</p>
+  <ul>
+   <li>Add densities with the right mouse button</li>
+   <li>Add velocities with the left mouse button and dragging the mouse</li>
+  </ul>
+  <div>
+   <label>grid resolution</label>
+   <input type='text' name='N' value='64' />
   </div>
- <div>
-  <label>scales the mouse movement that generate a force</label>
-  <input type='text' name='force' value='5' />
- </div>
- <div>
-  <label>amount of density that will be deposited</label>
-  <input type='text' name='source' value='100' />
- </div>
- <div>
-  <input type='checkbox' name='dvel' />Toggle density/velocity
- </div>
- <hr />
- <button type='button' onclick='Start();'>Start</button>
- <button type='button' onclick='Stop();'>Stop</button>
- <button type='button' onclick='Reset();'>Reset</button>
+  <div>
+   <label>time step</label>
+   <input type='text' name='dt' value='0.1' />
+  </div>
+  <div>
+   <label>diffusion rate of the density</label>
+   <input type='text' name='diff' value='0' />
+  </div>
+  <div>
+   <label>viscosity of the fluid</label>
+   <input type='text' name='visc' value='0' />
+  </div>
+  <div>
+   <label>scales the mouse movement that generate a force</label>
+   <input type='text' name='force' value='5' />
+  </div>
+  <div>
+   <label>amount of density that will be deposited</label>
+   <input type='text' name='source' value='100' />
+  </div>
+  <div>
+   <input type='checkbox' name='dvel' />Toggle density/velocity
+  </div>
+ </details>
 </form>
-<div id='vis'></div>
+<div id='vis' style='background-color:black;'></div>
 
 </body>
 </html>

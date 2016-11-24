@@ -112,33 +112,36 @@ function draw_density ()
 	glEnd ();
 }
 
-/*
-  ----------------------------------------------------------------------
-   relates mouse movements to forces sources
-  ----------------------------------------------------------------------
-*/
-
-function get_from_UI ( d, u, v )
-{
-
-	for (let i=0 ; i<size ; i++ ) {
-		u[i] = v[i] = d[i] = 0.0;
-	}
+/**
+ * relates mouse movements to forces sources
+ * 
+ * 
+ * https://developer.mozilla.org/en/docs/Web/Events/mousemove
+ */
+function get_from_UI (e){
+	let LEFT = 1==(1 & e.buttons);
+	let RIGHT = 2==(2 & e.buttons);
 	
-	if ( !mouse_down[0] && !mouse_down[2] ) return;
+	if( !LEFT && !RIGHT ) return;
 	
-	i = Math.floor((       mx /(1.0*win_x))*N+1);
-	j = Math.floor(((win_y-my)/(1.0*win_y))*N+1);
+	mx = e.clientX;
+	my = e.clientY;
+	omx = omx || mx;
+	omy = omy || my;
+	
+	let i = Math.floor((       mx /(1.0*win_x))*N+1);
+	let j = Math.floor(((win_y-my)/(1.0*win_y))*N+1);
 	
 	if ( i<1 || i>N || j<1 || j>N ) return;
 	
-	if ( mouse_down[0] ) {
-		u[IX(i,j)] = force * (mx-omx);
-		v[IX(i,j)] = force * (omy-my);
-	}
+	let index = IX(i,j);
 	
-	if ( mouse_down[2] ) {
-		d[IX(i,j)] = source;
+	if (LEFT) {
+		u[index] = force * (mx-omx);
+		v[index] = force * (omy-my);
+	}
+	if (RIGHT) {
+		d[index] = source;
 	}
 	
 	omx = mx;
@@ -195,10 +198,14 @@ function reshape_func (width, height )
 	win_y = height;
 }
 
-function idle_func(){
+function MainLoop(){
 	get_from_UI ( dens_prev, u_prev, v_prev );
+	
 	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
+	
+	draw_velocity();
+	draw_density();
 }
 
 var loop = null;
@@ -218,30 +225,31 @@ function Reset(){
 }
 
 
-/*
-  ----------------------------------------------------------------------
-   main --- main routine
-  ----------------------------------------------------------------------
-*/
-
-function MainLoop(){
-}
 
 function init(){
-	dvel = 0;
+	GetFormValues(d3.select("form").node());
 	
 	allocate_data();
 	
 	win_x = 512;
 	win_y = 512;
-	canvase= d3.select("#vis");
+	let base = d3.select("#vis");
 	
-	var chart = base.append("canvas")
+	canvas = base.append("canvas")
 		.attr("width", win_x)
 		.attr("height", win_y)
 		;
+	let node = canvas.node();
+	node.addEventListener("mousedown", function() {
+		let up = function(){
+			node.removeEventListener("mousemove",get_from_UI);
+			node.removeEventListener("mouseup",up);
+		};
+		node.addEventListener("mousemove",get_from_UI);
+		node.addEventListener("mouseup",up);
+	});
 	
-	var context = chart.node().getContext("2d");
+	var context = canvas.node().getContext("2d");
 	
 	// Create an in memory only element of type 'custom'
 	var detachedContainer = document.createElement("custom");
@@ -249,5 +257,15 @@ function init(){
 	// Create a d3 selection for the detached container. We won't
 	// actually be attaching it to the DOM.
 	var dataContainer = d3.select(detachedContainer);
+	
+}
 
+function GetFormValues(form){
+	N = form.N.value;
+	dt = form.dt.value;
+	diff = form.diff.value;
+	visc = form.visc.value;
+	force = form.force.value;
+	source = form.source.value;
+	dvel = (form.dvel.isChecked === true);
 }
