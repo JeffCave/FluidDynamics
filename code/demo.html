@@ -16,10 +16,10 @@
 	}
  </style>
 </head>
-<body onload='init();'>
+<body>
 <form onsubmit='return false;' oninput='GetFormValues(this);'>
- <details style='position:fixed;top:0;left:0;right:0;background-color:white;'>
-  <summary style='padding:0.5em;'>
+ <details style='position:fixed;top:0;left:10em;right:0;background-color:white;padding-left:1em;padding-bottom:1em;'>
+  <summary style='padding:0.5em;margin-left:-1em;'>
    <button type='button' onclick='Start();'>Start</button>
    <button type='button' onclick='Stop();'>Stop</button>
    <button type='button' onclick='Reset();'>Reset</button>
@@ -54,11 +54,13 @@
    <input type='text' name='source' value='100' />
   </div>
   <div>
-   <input type='checkbox' name='dvel' />Toggle density/velocity
+   <input type='checkbox' name='dvel' value='true' checked />Toggle density/velocity
   </div>
  </details>
 </form>
 <div id='vis' style='background-color:black;'></div>
-
+<script>
+init();
+</script>
 </body>
 </html>

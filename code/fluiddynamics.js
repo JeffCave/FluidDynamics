@@ -9,7 +9,19 @@ function FOR_EACH_CELL(func){
 }
 
 function IX(i,j){
-	return ((i)+(N+2)*(j));
+	if(typeof i === "object"){
+		j = i.j;
+		i = i.i;
+	}
+	return (i+j*(N+2));
+}
+
+function XI(n){
+	let width = N+2;
+	return {
+		j:~~(n/width),
+		i:n%width,
+	};
 }
 
 function SWAP(x0,x) {

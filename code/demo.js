@@ -2,6 +2,8 @@
 
 /* global variables */
 
+var FPS = 10;
+
 var N;
 var size;
 var dt, diff, visc;
@@ -60,56 +62,92 @@ function allocate_data (){
 	clear_data();
 }
 
+
+/**
+ * 
+ * 
+ * https://bocoup.com/weblog/d3js-and-canvas
+ */
 function draw_velocity ()
 {
-	let x, y, h;
-
-	h = 1.0/N;
-
-	glColor3f ( 1.0, 1.0, 1.0 );
-	glLineWidth ( 1.0 );
-
-	glBegin ( GL_LINES );
-
-		for (let i=1 ; i<=N ; i++ ) {
-			x = (i-0.5)*h;
-			for (let j=1 ; j<=N ; j++ ) {
-				y = (j-0.5)*h;
-
-				glVertex2f ( x, y );
-				glVertex2f ( x+u[IX(i,j)], y+v[IX(i,j)] );
-			}
-		}
-
-	glEnd ();
+	//var scale = d3.scale.linear()
+	//	.range([1, win_x])
+	//	.domain(d3.extent(data))
+	//	;
+	
+	let dataBinding = canvas.selectAll("line")
+		.data(v /*, function(d,i) { 
+			let coord = XI(i);
+			let rtn = {
+				i : i,
+				coord : coord,
+				vel: d,
+				x1: coord.i,
+				y1: coord.j,
+				x2: coord.i+u[i],
+				y2: coord.j+d,
+			};
+			return rtn;
+		}*/ )
+		;
+	
+	dataBinding
+		/*
+		.attr("x2", function(d){return d.x2;})
+		.attr("y2", function(d){return d.y2;})
+		*/
+		.attr("x2", function(d,i){return XI(i).j + u[i];})
+		.attr("y2", function(d,i){return XI(i).i + v[i];})
+		;
+	
+	// for new elements, create a 'custom' dom node, of class rect
+	// with the appropriate rect attributes
+	dataBinding.enter()
+		.append("line")
+		.attr("stroke-width", "1")
+		.attr("stroke","white")
+		.attr("x1", function(d,i){
+			return XI(i).j;
+			})
+		.attr("y1", function(d,i){
+			return XI(i).i;
+			})
+		.attr("x2", function(d,i){
+			return XI(i).j + u[i];
+			})
+		.attr("y2", function(d,i){
+			return XI(i).i + v[i];
+			})
+		;
+	
+	// for exiting elements, change the size to 5 and make them grey.
+//	dataBinding.exit()
+//		.remove()
+//		;
 }
 
 function draw_density ()
 {
-	let x, y, h, d00, d01, d10, d11;
+	let h = "" + win_x/N;
 	
-	h = 1.0/N;
+	let dataBinding = canvas.selectAll("line").data(dens);
 	
-	glBegin ( GL_QUADS );
-		
-		for (let i=0 ; i<=N ; i++ ) {
-			x = (i-0.5)*h;
-			for (let j=0 ; j<=N ; j++ ) {
-				y = (j-0.5)*h;
-				
-				d00 = dens[IX(i,j)];
-				d01 = dens[IX(i,j+1)];
-				d10 = dens[IX(i+1,j)];
-				d11 = dens[IX(i+1,j+1)];
-				
-				glColor3f ( d00, d00, d00 ); glVertex2f ( x, y );
-				glColor3f ( d10, d10, d10 ); glVertex2f ( x+h, y );
-				glColor3f ( d11, d11, d11 ); glVertex2f ( x+h, y+h );
-				glColor3f ( d01, d01, d01 ); glVertex2f ( x, y+h );
-			}
-		}
-		
-	glEnd ();
+	dataBinding
+		.attr("fill-opacity",function(d){
+			return d;
+		});
+	
+	// for new elements, create a 'custom' dom node, of class rect
+	// with the appropriate rect attributes
+	dataBinding.enter()
+		.append("rect")
+		.attr("fill","purple")
+		.attr("fill-opacity","0")
+		.attr("width" ,h)
+		.attr("height",h)
+		.attr("x", function(d,i){return XI(i).j;})
+		.attr("y", function(d,i){return XI(i).i;})
+		;
 }
 
 /**
@@ -123,6 +161,8 @@ function get_from_UI (e){
 	let RIGHT = 2==(2 & e.buttons);
 	
 	if( !LEFT && !RIGHT ) return;
+	
+	console.debug('Mouse Activity: ' + e.buttons);
 	
 	mx = e.clientX;
 	my = e.clientY;
@@ -141,66 +181,19 @@ function get_from_UI (e){
 		v[index] = force * (omy-my);
 	}
 	if (RIGHT) {
-		d[index] = source;
+		dens[index] = source;
 	}
 	
 	omx = mx;
 	omy = my;
 }
 
-/*
-  ----------------------------------------------------------------------
-   GLUT callback routines
-  ----------------------------------------------------------------------
-*/
 
-function key_func ( key, x, y )
-{
-	switch ( key )
-	{
-		case 'c':
-		case 'C':
-			clear_data ();
-			break;
-
-		case 'q':
-		case 'Q':
-			free_data ();
-			exit ( 0 );
-			break;
-
-		case 'v':
-		case 'V':
-			dvel = !dvel;
-			break;
-	}
-}
-
-function mouse_func ( button, state, x, y ){
-	omx = mx = x;
-	omx = my = y;
-
-	mouse_down[button] = state == GLUT_DOWN;
-}
-
-function motion_func (x, y )
-{
-	mx = x;
-	my = y;
-}
-
-function reshape_func (width, height )
-{
-	glutSetWindow ( canvas );
-	glutReshapeWindow ( width, height );
-
-	win_x = width;
-	win_y = height;
+function reshape_func (){
+	console.debug("Window Resized");
 }
 
 function MainLoop(){
-	get_from_UI ( dens_prev, u_prev, v_prev );
-	
 	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	
@@ -211,7 +204,7 @@ function MainLoop(){
 var loop = null;
 function Start(){
 	if(!loop){
-		loop = setInterval(MainLoop, 10);
+		loop = setInterval(MainLoop, 1000/FPS);
 	}
 }
 
@@ -233,14 +226,16 @@ function init(){
 	
 	win_x = 512;
 	win_y = 512;
-	let base = d3.select("#vis");
-	
-	canvas = base.append("canvas")
+	canvas = d3.select("#vis")
+		.append("svg")
 		.attr("width", win_x)
 		.attr("height", win_y)
 		;
 	let node = canvas.node();
+	
 	node.addEventListener("mousedown", function() {
+		omx = null;
+		omy = null;
 		let up = function(){
 			node.removeEventListener("mousemove",get_from_UI);
 			node.removeEventListener("mouseup",up);
@@ -249,23 +244,16 @@ function init(){
 		node.addEventListener("mouseup",up);
 	});
 	
-	var context = canvas.node().getContext("2d");
-	
-	// Create an in memory only element of type 'custom'
-	var detachedContainer = document.createElement("custom");
-	
-	// Create a d3 selection for the detached container. We won't
-	// actually be attaching it to the DOM.
-	var dataContainer = d3.select(detachedContainer);
+	window.onresize = reshape_func;
 	
 }
 
 function GetFormValues(form){
-	N = form.N.value;
-	dt = form.dt.value;
-	diff = form.diff.value;
-	visc = form.visc.value;
-	force = form.force.value;
-	source = form.source.value;
-	dvel = (form.dvel.isChecked === true);
+	N = +form.N.value;
+	dt = +form.dt.value;
+	diff = +form.diff.value;
+	visc = +form.visc.value;
+	force = +form.force.value;
+	source = +form.source.value;
+	dvel = (form.dvel.checked === true);
 }
