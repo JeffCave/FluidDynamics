@@ -1,8 +1,8 @@
 'use strict';
 
 function FOR_EACH_CELL(func){
-	for ( let i=1 ; i<=N ; i++ ) { 
-		for ( let j=1 ; j<=N ; j++ ) {
+	for ( var i=1 ; i<=N ; i++ ) { 
+		for ( var j=1 ; j<=N ; j++ ) {
 			func(i,j);
 		}
 	}
@@ -17,7 +17,7 @@ function IX(i,j){
 }
 
 function XI(n){
-	let width = N+2;
+	var width = N+2;
 	return {
 		j:~~(n/width),
 		i:n%width,
@@ -25,15 +25,15 @@ function XI(n){
 }
 
 function SWAP(x0,x) {
-	let tmp=x0;
+	var tmp=x0;
 	x0=x;
 	x=tmp;
 }
 
 function add_source ( /* int */ N, /* float * */ x, /*float * */ s, /*float*/ dt )
 {
-	let i;
-	let size=(N+2)*(N+2);
+	var i;
+	var size=(N+2)*(N+2);
 	for ( i=0 ; i<size ; i++ ){
 		x[i] += dt*s[i];
 	}
@@ -41,7 +41,7 @@ function add_source ( /* int */ N, /* float * */ x, /*float * */ s, /*float*/ dt
 
 function set_bnd ( /* int */ N, /*int*/ b, /* float * */ x )
 {
-	for (let i=1 ; i<=N ; i++ ) {
+	for (var i=1 ; i<=N ; i++ ) {
 		x[IX(0  ,i)] = b==1 ? -x[IX(1,i)] : x[IX(1,i)];
 		x[IX(N+1,i)] = b==1 ? -x[IX(N,i)] : x[IX(N,i)];
 		x[IX(i,0  )] = b==2 ? -x[IX(i,1)] : x[IX(i,1)];
@@ -55,9 +55,9 @@ function set_bnd ( /* int */ N, /*int*/ b, /* float * */ x )
 
 function lin_solve ( /* int */ N, /* int */ b, /* float * */ x, /* float * */ x0, /* float */  a, /* float */ c )
 {
-	let i, j, k;
+	var i, j, k;
 
-	for (let k=0 ; k<20 ; k++ ) {
+	for (var k=0 ; k<20 ; k++ ) {
 		FOR_EACH_CELL(function(i,j){
 			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
 		});
@@ -67,14 +67,14 @@ function lin_solve ( /* int */ N, /* int */ b, /* float * */ x, /* float * */ x0
 
 function diffuse ( /* int */ N, /* int */ b, /* float * */ x, /* float * */ x0, /* float */ diff, /* float */ dt )
 {
-	let a=dt*diff*N*N;
+	var a=dt*diff*N*N;
 	lin_solve ( N, b, x, x0, a, 1+4*a );
 }
 
 function advect ( /* int */ N, /* int */ b, /* float * */ d, /* float * */ d0, /* float * */ u, /* float * */ v, /* float */ dt )
 {
-	let i0, j0, i1, j1;
-	let x, y, s0, t0, s1, t1, dt0;
+	var i0, j0, i1, j1;
+	var x, y, s0, t0, s1, t1, dt0;
 
 	dt0 = dt*N;
 	FOR_EACH_CELL(function(i,j){

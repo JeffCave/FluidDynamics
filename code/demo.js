@@ -37,7 +37,7 @@ var my;
 
 
 function clear_data (){
-	for (let i=0 ; i<size ; i++ ) {
+	for (var i=0 ; i<size ; i++ ) {
 		u[i]
 			= v[i]
 			= u_prev[i]
@@ -75,7 +75,7 @@ function draw_velocity ()
 	//	.domain(d3.extent(data))
 	//	;
 	
-	let dataBinding = canvas.selectAll("line")
+	var dataBinding = canvas.selectAll("line")
 		.data(v /*, function(d,i) { 
 			let coord = XI(i);
 			let rtn = {
@@ -128,9 +128,9 @@ function draw_velocity ()
 
 function draw_density ()
 {
-	let h = "" + win_x/N;
+	var h = "" + win_x/N;
 	
-	let dataBinding = canvas.selectAll("line").data(dens);
+	var dataBinding = canvas.selectAll("line").data(dens);
 	
 	dataBinding
 		.attr("fill-opacity",function(d){
@@ -157,8 +157,8 @@ function draw_density ()
  * https://developer.mozilla.org/en/docs/Web/Events/mousemove
  */
 function get_from_UI (e){
-	let LEFT = 1==(1 & e.buttons);
-	let RIGHT = 2==(2 & e.buttons);
+	var LEFT = 1==(1 & e.buttons);
+	var RIGHT = 2==(2 & e.buttons);
 	
 	if( !LEFT && !RIGHT ) return;
 	
@@ -169,12 +169,12 @@ function get_from_UI (e){
 	omx = omx || mx;
 	omy = omy || my;
 	
-	let i = Math.floor((       mx /(1.0*win_x))*N+1);
-	let j = Math.floor(((win_y-my)/(1.0*win_y))*N+1);
+	var i = Math.floor((       mx /(1.0*win_x))*N+1);
+	var j = Math.floor(((win_y-my)/(1.0*win_y))*N+1);
 	
 	if ( i<1 || i>N || j<1 || j>N ) return;
 	
-	let index = IX(i,j);
+	var index = IX(i,j);
 	
 	if (LEFT) {
 		u[index] = force * (mx-omx);
@@ -231,12 +231,12 @@ function init(){
 		.attr("width", win_x)
 		.attr("height", win_y)
 		;
-	let node = canvas.node();
+	var node = canvas.node();
 	
 	node.addEventListener("mousedown", function() {
 		omx = null;
 		omy = null;
-		let up = function(){
+		var up = function(){
 			node.removeEventListener("mousemove",get_from_UI);
 			node.removeEventListener("mouseup",up);
 		};
