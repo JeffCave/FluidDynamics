@@ -1,6 +1,6 @@
 <html>
 <head>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.3.0/d3.min.js" integrity="sha256-nmVW7V4d14Gfxlcq4PgXq/ZSODv1HhQwMxccoU308kY=" crossorigin="anonymous"></script>
+ <script src="lib/d3/d3.min.js" ></script>
  
  <script src="fluiddynamics.js"></script>
  <script src="demo.js"></script>
@@ -23,11 +23,18 @@
    <button type='button' onclick='Start();'>Start</button>
    <button type='button' onclick='Stop();'>Stop</button>
    <button type='button' onclick='Reset();'>Reset</button>
+   <button type='button' onclick='Seed();'>Seed</button>
   </summary>
   <p>How to use this demo:</p>
   <ul>
-   <li>Add densities with the right mouse button</li>
-   <li>Add velocities with the left mouse button and dragging the mouse</li>
+   <li>
+    Add densities with the right mouse 
+	button
+   </li>
+   <li>
+    Add velocities with the left mouse 
+	button and dragging the mouse
+   </li>
   </ul>
   <div>
    <label>grid resolution</label>
@@ -60,7 +67,7 @@
 </form>
 <div id='vis' style='background-color:black;'></div>
 <script>
-init();
+	init();
 </script>
 </body>
 </html>

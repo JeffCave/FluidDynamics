@@ -16,13 +16,18 @@ function IX(i,j){
 	return (i+j*(N+2));
 }
 
-function XI(n){
+function indexCart(n){
 	var width = N+2;
-	return {
+	var rtn = {
 		j:~~(n/width),
 		i:n%width,
 	};
+	rtn.x = rtn.j;
+	rtn.y = rtn.i;
+	return rtn;
 }
+
+function XI(n){return indexCart(n);};
 
 function SWAP(x0,x) {
 	var tmp=x0;

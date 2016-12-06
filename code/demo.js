@@ -21,7 +21,6 @@ var dens_prev = [];
 var canvas;
 var win_x;
 var win_y;
-var mouse_down = [0,0,0];
 
 var omx;
 var omy;
@@ -70,60 +69,57 @@ function allocate_data (){
  */
 function draw_velocity ()
 {
+	var h = win_x/N;
+	console.log("hee");
+	
 	//var scale = d3.scale.linear()
 	//	.range([1, win_x])
 	//	.domain(d3.extent(data))
 	//	;
 	
-	var dataBinding = canvas.selectAll("line")
-		.data(v /*, function(d,i) { 
-			let coord = XI(i);
-			let rtn = {
-				i : i,
-				coord : coord,
-				vel: d,
-				x1: coord.i,
-				y1: coord.j,
-				x2: coord.i+u[i],
-				y2: coord.j+d,
-			};
-			return rtn;
-		}*/ )
+	
+	
+	
+	var dataBinding = d3
+		.select("g.lines")
+		.selectAll("line")
+		.data(v)
 		;
 	
 	dataBinding
-		/*
-		.attr("x2", function(d){return d.x2;})
-		.attr("y2", function(d){return d.y2;})
-		*/
-		.attr("x2", function(d,i){return XI(i).j + u[i];})
-		.attr("y2", function(d,i){return XI(i).i + v[i];})
+		.attr("x2", function(d,i){
+				return h*(XI(i).j + u[i]);
+			})
+		.attr("y2", function(d,i){
+				return h*(XI(i).i + v[i]);
+			})
 		;
 	
-	// for new elements, create a 'custom' dom node, of class rect
-	// with the appropriate rect attributes
+	// create the initial lines starting
+	// 
 	dataBinding.enter()
 		.append("line")
 		.attr("stroke-width", "1")
-		.attr("stroke","white")
+		.attr("stroke","red")
 		.attr("x1", function(d,i){
-			return XI(i).j;
+				return h*XI(i).x;
 			})
 		.attr("y1", function(d,i){
-			return XI(i).i;
+				return h*XI(i).y;
 			})
 		.attr("x2", function(d,i){
-			return XI(i).j + u[i];
+				return h*(XI(i).x + u[i]);
 			})
 		.attr("y2", function(d,i){
-			return XI(i).i + v[i];
+				return h*(XI(i).y + v[i]);
 			})
 		;
 	
-	// for exiting elements, change the size to 5 and make them grey.
-//	dataBinding.exit()
-//		.remove()
-//		;
+	// for exiting items...
+	// well that should never happen
+	//dataBinding.exit()
+	//	.remove()
+	//	;
 }
 
 function draw_density ()
@@ -142,9 +138,9 @@ function draw_density ()
 	dataBinding.enter()
 		.append("rect")
 		.attr("fill","purple")
-		.attr("fill-opacity","0")
-		.attr("width" ,h)
-		.attr("height",h)
+		.attr("fill-opacity","1")
+		.attr("width" ,100)
+		.attr("height",100)
 		.attr("x", function(d,i){return XI(i).j;})
 		.attr("y", function(d,i){return XI(i).i;})
 		;
@@ -198,7 +194,7 @@ function MainLoop(){
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	
 	draw_velocity();
-	draw_density();
+	//draw_density();
 }
 
 var loop = null;
@@ -217,9 +213,28 @@ function Reset(){
 	clear_data();
 }
 
-
-
 function init(){
+	if(console){
+		console.origLog = console.log;
+		console.log = function(msg){
+			console.origLog(msg);
+			var log = d3.select("#log > tbody");
+			var data = log.data();
+			data.shift({
+				"time":d3.now(),
+				"msg":msg,
+				});
+			log = log.selectAll("tr").data(data);
+			log.enter()
+				.append("tr")
+				.append("td")
+				.html(function(d){return d.msg;})
+				;
+		};
+		
+	}
+	console.log("Logging initialized");
+	
 	GetFormValues(d3.select("form").node());
 	
 	allocate_data();
@@ -231,7 +246,9 @@ function init(){
 		.attr("width", win_x)
 		.attr("height", win_y)
 		;
-	var node = canvas.node();
+	d3.select("#vis svg").append("g").attr("class","lines");
+	d3.select("#vis svg").append("g").attr("class","densities");
+	var node = d3.select("#vis svg").node();
 	
 	node.addEventListener("mousedown", function() {
 		omx = null;
@@ -256,4 +273,69 @@ function GetFormValues(form){
 	force = +form.force.value;
 	source = +form.source.value;
 	dvel = (form.dvel.checked === true);
+}
+
+function Seed(){
+	var smoker = SeedVel();
+	SeedDens(smoker);
+}
+
+var smokeMachine = null;
+function SeedDens(loc){9
+	loc = IX(loc[0],loc[1]);
+	smokeMachine = setInterval(function(){
+		if(!smokeMachine){
+			return;
+		}
+		dens[loc] = 1;
+	},1000);
+}
+
+
+function SeedVel(dir,rect){
+	rect= rect || {
+		x:0,
+		y:0,
+		width:win_x,
+		height : win_y,
+	};
+	dir = (dir || 0) % 4;
+	
+	if(rect.hieght ===0 || rect.width ===0){
+		return [rect.x,rect.y];
+	}
+	
+	var right = JSON.parse(JSON.stringify(rect));
+	var left = JSON.parse(JSON.stringify(rect));
+	
+	if(dir%2===1){
+		right.x = Math.floor((right.x+right.width)/2);
+		left.width = right.x - left.x;
+	}
+	else{
+		right.y = Math.floor((right.y+right.height)/2);
+		left.height = right.y - left.y;
+	}
+	
+	if(dir>1){
+		var t= right;
+		right=left;
+		left=t;
+	}
+	
+	for(var x=right.x; x<right.width;x++){
+		for( var y=right.y; y<right.height; y++){
+			var i = XI(x,y);
+			u[i] = (dir%2) 
+				* (dir<2?-1:1) 
+				* right.width
+				;
+			v[i] = ((dir+1)%2) 
+				* (dir<2?-1:1) 
+				* right.height
+				;
+		}
+	}
+	
+	return SeedVel(dir+1,left);
 }
