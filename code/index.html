@@ -18,7 +18,7 @@
 </head>
 <body>
 <form onsubmit='return false;' oninput='GetFormValues(this);'>
- <details style='position:fixed;top:0;left:10em;right:0;background-color:white;padding-left:1em;padding-bottom:1em;'>
+ <details style='position:fixed;bottom:0;left:1em;right:1em;background-color:white;border:1px solid black;'>
   <summary style='padding:0.5em;margin-left:-1em;'>
    <button type='button' onclick='Start();'>Start</button>
    <button type='button' onclick='Stop();'>Stop</button>
@@ -38,7 +38,7 @@
   </ul>
   <div>
    <label>grid resolution</label>
-   <input type='text' name='N' value='4' />
+   <input type='text' name='N' value='64' />
   </div>
   <div>
    <label>time step</label>
@@ -65,7 +65,7 @@
   </div>
  </details>
 </form>
-<div id='vis' style='background-color:black;'></div>
+<div id='vis'></div>
 <script>
 	init();
 </script>

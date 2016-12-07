@@ -17,6 +17,7 @@ var v_prev = [];
 
 var dens;
 var dens_prev = [];
+var saturation=100;
 
 var canvas;
 var win_x;
@@ -72,6 +73,7 @@ function draw_velocity ()
 	console.log("here");
 	
 	var scale = win_x/N;
+	var offset = scale/2;
 	//var scale = d3.scale.linear()
 	//	.range([1, win_x])
 	//	.domain(d3.extent(data))
@@ -88,10 +90,18 @@ function draw_velocity ()
 	
 	dataBinding
 		.attr("x2", function(d,i){
-				return scale*(XI(i).x + u[i]);
+				var val = XI(i).x;
+				val += u[i];
+				val *= scale;
+				val += offset;
+				return val+1;
 			})
 		.attr("y2", function(d,i){
-				return scale*(XI(i).y + v[i]);
+				var val = XI(i).y;
+				val += v[i];
+				val *= scale;
+				val += offset;
+				return val+1;
 			})
 		;
 	
@@ -102,16 +112,16 @@ function draw_velocity ()
 		.attr("stroke-width", "1")
 		.attr("stroke","red")
 		.attr("x1", function(d,i){
-				return scale*XI(i).x;
+				var val = XI(i).x;
+				val *= scale;
+				val += offset;
+				return val;
 			})
 		.attr("y1", function(d,i){
-				return scale*XI(i).y;
-			})
-		.attr("x2", function(d,i){
-				return scale*(XI(i).x + u[i]);
-			})
-		.attr("y2", function(d,i){
-				return scale*(XI(i).y + v[i]);
+				var val = XI(i).y;
+				val *= scale;
+				val += offset;
+				return val;
 			})
 		;
 	
@@ -124,12 +134,18 @@ function draw_velocity ()
 
 function draw_density()
 {
-	var h = "" + win_x/N;
+	var scale = win_x/N;
 	
 	var dataBinding = canvas.selectAll("line").data(dens);
+		var dataBinding = d3
+		.select("g.densities")
+		.selectAll("rect")
+		.data(dens)
+		;
 	
 	dataBinding
 		.attr("fill-opacity",function(d){
+			return 1;
 			return d;
 		});
 	
@@ -137,12 +153,15 @@ function draw_density()
 	// with the appropriate rect attributes
 	dataBinding.enter()
 		.append("rect")
-		.attr("fill","purple")
-		.attr("fill-opacity","1")
-		.attr("width" ,h)
-		.attr("height",h)
-		.attr("x", function(d,i){return h * XI(i).x;})
-		.attr("y", function(d,i){return h * XI(i).y;})
+		.attr("fill","black")
+		.attr("width" ,scale)
+		.attr("height",scale)
+		.attr("x", function(d,i){
+				return scale * XI(i).x;
+			})
+		.attr("y", function(d,i){
+				return scale * XI(i).y;
+			})
 		;
 }
 
@@ -194,7 +213,7 @@ function MainLoop(){
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	
 	draw_velocity();
-	//draw_density();
+	draw_density();
 }
 
 var loop = null;

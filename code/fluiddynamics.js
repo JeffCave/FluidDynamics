@@ -19,11 +19,11 @@ function IX(i,j){
 function indexCart(n){
 	var width = N+2;
 	var rtn = {
-		j:~~(n/width),
-		i:n%width,
+		x:Math.floor(n/width),
+		y:n%width,
 	};
-	rtn.x = rtn.j;
-	rtn.y = rtn.i;
+	rtn.j = rtn.x;
+	rtn.i = rtn.y;
 	return rtn;
 }
 
