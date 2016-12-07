@@ -17,7 +17,6 @@ var v_prev = [];
 
 var dens;
 var dens_prev = [];
-var saturation=100;
 
 var canvas;
 var win_x;
@@ -35,6 +34,9 @@ var my;
   ----------------------------------------------------------------------
 */
 
+function jitter(){
+	return Math.random()*2 - 1;
+}
 
 function clear_data (){
 	for (var i=0 ; i<size ; i++ ) {
@@ -69,9 +71,7 @@ function allocate_data (){
  * https://bocoup.com/weblog/d3js-and-canvas
  */
 function draw_velocity ()
-{
-	console.log("here");
-	
+{	
 	var scale = win_x/N;
 	var offset = scale/2;
 	//var scale = d3.scale.linear()
@@ -94,14 +94,14 @@ function draw_velocity ()
 				val += u[i];
 				val *= scale;
 				val += offset;
-				return val+1;
+				return val+1+jitter();
 			})
 		.attr("y2", function(d,i){
 				var val = XI(i).y;
 				val += v[i];
 				val *= scale;
 				val += offset;
-				return val+1;
+				return val+1+jitter();
 			})
 		;
 	
@@ -145,7 +145,6 @@ function draw_density()
 	
 	dataBinding
 		.attr("fill-opacity",function(d){
-			return 1;
 			return d;
 		});
 	
@@ -206,6 +205,8 @@ function get_from_UI (e){
 
 function reshape_func (){
 	console.debug("Window Resized");
+	win_x = window.innerWidth;
+	win_y = window.innerHeight;
 }
 
 function MainLoop(){
@@ -239,8 +240,9 @@ function init(){
 	
 	allocate_data();
 	
-	win_x = 512;
-	win_y = 512;
+	window.onresize = reshape_func;
+	reshape_func();
+	
 	canvas = d3.select("#vis")
 		.append("svg")
 		.attr("width", win_x)
@@ -262,8 +264,9 @@ function init(){
 		node.addEventListener("mouseup",up);
 	});
 	
-	window.onresize = reshape_func;
-	
+	Seed();
+	draw_velocity();
+	draw_density();
 }
 
 function GetFormValues(form){
@@ -282,13 +285,16 @@ function Seed(){
 }
 
 var smokeMachine = null;
-function SeedDens(loc){9
+function SeedDens(loc){
+	if(smokeMachine){
+		clearInterval(smokeMachine);
+	}
 	loc = IX(loc[0],loc[1]);
 	smokeMachine = setInterval(function(){
 		if(!smokeMachine){
 			return;
 		}
-		dens[loc] = 1;
+		dens[loc] = source;
 	},1000);
 }
 
