@@ -122,7 +122,7 @@ function draw_velocity ()
 	//	;
 }
 
-function draw_density ()
+function draw_density()
 {
 	var h = "" + win_x/N;
 	
@@ -139,10 +139,10 @@ function draw_density ()
 		.append("rect")
 		.attr("fill","purple")
 		.attr("fill-opacity","1")
-		.attr("width" ,100)
-		.attr("height",100)
-		.attr("x", function(d,i){return XI(i).j;})
-		.attr("y", function(d,i){return XI(i).i;})
+		.attr("width" ,h)
+		.attr("height",h)
+		.attr("x", function(d,i){return h * XI(i).x;})
+		.attr("y", function(d,i){return h * XI(i).y;})
 		;
 }
 
@@ -214,25 +214,6 @@ function Reset(){
 }
 
 function init(){
-	if(console){
-		console.origLog = console.log;
-		console.log = function(msg){
-			console.origLog(msg);
-			var log = d3.select("#log > tbody");
-			var data = log.data();
-			data.shift({
-				"time":d3.now(),
-				"msg":msg,
-				});
-			log = log.selectAll("tr").data(data);
-			log.enter()
-				.append("tr")
-				.append("td")
-				.html(function(d){return d.msg;})
-				;
-		};
-		
-	}
 	console.log("Logging initialized");
 	
 	GetFormValues(d3.select("form").node());
@@ -294,26 +275,26 @@ function SeedDens(loc){9
 
 function SeedVel(dir,rect){
 	rect= rect || {
-		x:0,
-		y:0,
-		width:win_x,
-		height : win_y,
+		x:1,
+		y:1,
+		width: N,
+		height : N,
 	};
 	dir = (dir || 0) % 4;
 	
-	if(rect.hieght ===0 || rect.width ===0){
+	if(rect.height ===0 || rect.width ===0){
 		return [rect.x,rect.y];
 	}
 	
 	var right = JSON.parse(JSON.stringify(rect));
 	var left = JSON.parse(JSON.stringify(rect));
 	
-	if(dir%2===1){
-		right.x = Math.floor((right.x+right.width)/2);
+	if(dir%2===0){
+		right.x = Math.floor((right.x+right.width)/2)+1;
 		left.width = right.x - left.x;
 	}
 	else{
-		right.y = Math.floor((right.y+right.height)/2);
+		right.y = Math.floor((right.y+right.height)/2)+1;
 		left.height = right.y - left.y;
 	}
 	
@@ -323,16 +304,19 @@ function SeedVel(dir,rect){
 		left=t;
 	}
 	
+	var scale = win_x/N;
 	for(var x=right.x; x<right.width;x++){
 		for( var y=right.y; y<right.height; y++){
-			var i = XI(x,y);
+			var i = IX(x,y);
 			u[i] = (dir%2) 
-				* (dir<2?-1:1) 
+				* (dir<2?1:-1) 
 				* right.width
+				* scale
 				;
 			v[i] = ((dir+1)%2) 
-				* (dir<2?-1:1) 
+				* (dir<2?1:-1) 
 				* right.height
+				* scale
 				;
 		}
 	}
