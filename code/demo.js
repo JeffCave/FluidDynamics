@@ -69,9 +69,9 @@ function allocate_data (){
  */
 function draw_velocity ()
 {
-	var h = win_x/N;
-	console.log("hee");
+	console.log("here");
 	
+	var scale = win_x/N;
 	//var scale = d3.scale.linear()
 	//	.range([1, win_x])
 	//	.domain(d3.extent(data))
@@ -88,10 +88,10 @@ function draw_velocity ()
 	
 	dataBinding
 		.attr("x2", function(d,i){
-				return h*(XI(i).j + u[i]);
+				return scale*(XI(i).x + u[i]);
 			})
 		.attr("y2", function(d,i){
-				return h*(XI(i).i + v[i]);
+				return scale*(XI(i).y + v[i]);
 			})
 		;
 	
@@ -102,16 +102,16 @@ function draw_velocity ()
 		.attr("stroke-width", "1")
 		.attr("stroke","red")
 		.attr("x1", function(d,i){
-				return h*XI(i).x;
+				return scale*XI(i).x;
 			})
 		.attr("y1", function(d,i){
-				return h*XI(i).y;
+				return scale*XI(i).y;
 			})
 		.attr("x2", function(d,i){
-				return h*(XI(i).x + u[i]);
+				return scale*(XI(i).x + u[i]);
 			})
 		.attr("y2", function(d,i){
-				return h*(XI(i).y + v[i]);
+				return scale*(XI(i).y + v[i]);
 			})
 		;
 	
@@ -227,8 +227,9 @@ function init(){
 		.attr("width", win_x)
 		.attr("height", win_y)
 		;
-	d3.select("#vis svg").append("g").attr("class","lines");
+
 	d3.select("#vis svg").append("g").attr("class","densities");
+	d3.select("#vis svg").append("g").attr("class","lines");
 	var node = d3.select("#vis svg").node();
 	
 	node.addEventListener("mousedown", function() {
@@ -257,8 +258,8 @@ function GetFormValues(form){
 }
 
 function Seed(){
-	var smoker = SeedVel();
-	SeedDens(smoker);
+	var smokerLoc = SeedVel();
+	SeedDens(smokerLoc);
 }
 
 var smokeMachine = null;
@@ -282,7 +283,7 @@ function SeedVel(dir,rect){
 	};
 	dir = (dir || 0) % 4;
 	
-	if(rect.height ===0 || rect.width ===0){
+	if(rect.height-rect.y ===0 || rect.width-rect.x ===0){
 		return [rect.x,rect.y];
 	}
 	
@@ -298,25 +299,22 @@ function SeedVel(dir,rect){
 		left.height = right.y - left.y;
 	}
 	
-	if(dir>1){
+	if(dir==1 || dir==2){
 		var t= right;
 		right=left;
 		left=t;
 	}
 	
-	var scale = win_x/N;
-	for(var x=right.x; x<right.width;x++){
-		for( var y=right.y; y<right.height; y++){
+	for(var x=right.x; x<=right.width;x++){
+		for( var y=right.y; y<=right.height; y++){
 			var i = IX(x,y);
 			u[i] = (dir%2) 
 				* (dir<2?1:-1) 
 				* right.width
-				* scale
 				;
 			v[i] = ((dir+1)%2) 
 				* (dir<2?1:-1) 
 				* right.height
-				* scale
 				;
 		}
 	}
