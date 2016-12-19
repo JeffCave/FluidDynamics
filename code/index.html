@@ -9,16 +9,33 @@
 	body{
 		font-family:sans-serif;
 		font-size:small;
+		padding:0px;
 	}
 	label{
 		display:block;
 		margin-top:0.5em;
 	}
+	#vis{
+		position:absolute;
+		left:0px;
+		right:0px;
+		top:0px;
+		bottom:0px;
+	}
+	details{
+		position:fixed;
+		bottom:0;
+		left:1em;
+		right:1em;
+		background-color:white;
+		border:1px solid black;
+	}
  </style>
 </head>
 <body>
+<div id='vis'></div>
 <form onsubmit='return false;' oninput='GetFormValues(this);'>
- <details style='position:fixed;bottom:0;left:1em;right:1em;background-color:white;border:1px solid black;'>
+ <details>
   <summary style='padding:0.5em;margin-left:-1em;'>
    <button type='button' onclick='Start();'>Start</button>
    <button type='button' onclick='Stop();'>Stop</button>
@@ -46,26 +63,25 @@
   </div>
   <div>
    <label>diffusion rate of the density</label>
-   <input type='text' name='diff' value='0' />
+   <input type='text' name='diff' value='0.0' />
   </div>
   <div>
    <label>viscosity of the fluid</label>
-   <input type='text' name='visc' value='0' />
+   <input type='text' name='visc' value='0.0' />
   </div>
   <div>
    <label>scales the mouse movement that generate a force</label>
-   <input type='text' name='force' value='5' />
+   <input type='text' name='force' value='5.0' />
   </div>
   <div>
    <label>amount of density that will be deposited</label>
-   <input type='text' name='source' value='100' />
+   <input type='text' name='source' value='100.0' />
   </div>
   <div>
    <input type='checkbox' name='dvel' value='true' checked />Toggle density/velocity
   </div>
  </details>
 </form>
-<div id='vis'></div>
 <script>
 	init();
 </script>

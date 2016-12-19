@@ -4,19 +4,6 @@
 
 var FPS = 10;
 
-var N;
-var size;
-var dt, diff, visc;
-var force, source;
-var dvel;
-
-var u = [];
-var v = [];
-var u_prev = [];
-var v_prev = [];
-
-var dens;
-var dens_prev = [];
 
 var canvas;
 var win_x;
@@ -73,7 +60,7 @@ function allocate_data (){
 function draw_velocity ()
 {	
 	var scale = win_x/N;
-	var offset = scale/2;
+	var offset = Math.round(scale/2);
 	//var scale = d3.scale.linear()
 	//	.range([1, win_x])
 	//	.domain(d3.extent(data))
@@ -88,23 +75,6 @@ function draw_velocity ()
 		.data(v)
 		;
 	
-	dataBinding
-		.attr("x2", function(d,i){
-				var val = XI(i).x;
-				val += u[i];
-				val *= scale;
-				val += offset;
-				return val+1+jitter();
-			})
-		.attr("y2", function(d,i){
-				var val = XI(i).y;
-				val += v[i];
-				val *= scale;
-				val += offset;
-				return val+1+jitter();
-			})
-		;
-	
 	// create the initial lines starting
 	// 
 	dataBinding.enter()
@@ -112,16 +82,51 @@ function draw_velocity ()
 		.attr("stroke-width", "1")
 		.attr("stroke","red")
 		.attr("x1", function(d,i){
-				var val = XI(i).x;
+				var val = indexCart(i).x;
 				val *= scale;
 				val += offset;
-				return val;
+				return Math.round(val);
 			})
 		.attr("y1", function(d,i){
-				var val = XI(i).y;
+				var val = indexCart(i).y;
 				val *= scale;
 				val += offset;
-				return val;
+				return Math.round(val);
+			})
+		.attr("x2", function(d,i){
+				var val = XI(i).x;
+				val += u[i];
+				val *= scale;
+				val += offset;
+				val += 1+jitter()
+				return Math.round(val);
+			})
+		.attr("y2", function(d,i){
+				var val = XI(i).y;
+				val += v[i];
+				val *= scale;
+				val += offset;
+				val += 1 + jitter()
+				return Math.round(val);
+			})
+		;
+	
+	dataBinding
+		.attr("x2", function(d,i){
+				var val = XI(i).x;
+				val += u[i];
+				val *= scale;
+				val += offset;
+				val += 1+jitter()
+				return Math.round(val);
+			})
+		.attr("y2", function(d,i){
+				var val = XI(i).y;
+				val += v[i];
+				val *= scale;
+				val += offset;
+				val += 1 + jitter()
+				return Math.round(val);
 			})
 		;
 	
@@ -210,7 +215,7 @@ function reshape_func (){
 }
 
 function MainLoop(){
-	vel_step ( N, u, v, u_prev, v_prev, visc, dt );
+	vel_step (u, v, u_prev, v_prev, visc, dt );
 	dens_step ( N, dens, dens_prev, u, v, diff, dt );
 	
 	draw_velocity();
@@ -346,3 +351,4 @@ function SeedVel(dir,rect){
 	
 	return SeedVel(dir+1,left);
 }
+

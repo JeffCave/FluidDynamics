@@ -1,5 +1,21 @@
 'use strict';
 
+
+var N;
+var size;
+var dt, diff, visc;
+var force, source;
+var dvel;
+
+var u = [];
+var v = [];
+var u_prev = [];
+var v_prev = [];
+
+var dens;
+var dens_prev = [];
+
+
 function FOR_EACH_CELL(func){
 	for ( var i=1 ; i<=N ; i++ ) { 
 		for ( var j=1 ; j<=N ; j++ ) {
@@ -19,8 +35,8 @@ function IX(i,j){
 function indexCart(n){
 	var width = N+2;
 	var rtn = {
-		x:Math.floor(n/width),
-		y:n%width,
+		y:Math.floor(n/width),
+		x:n%width,
 	};
 	rtn.j = rtn.x;
 	rtn.i = rtn.y;
@@ -35,16 +51,14 @@ function SWAP(x0,x) {
 	x=tmp;
 }
 
-function add_source ( /* int */ N, /* float * */ x, /*float * */ s, /*float*/ dt )
+function add_source (/* float * */ x, /*float * */ s, /*float*/ dt )
 {
-	var i;
-	var size=(N+2)*(N+2);
-	for ( i=0 ; i<size ; i++ ){
+	for ( var i=0 ; i<size ; i++ ){
 		x[i] += dt*s[i];
 	}
 }
 
-function set_bnd ( /* int */ N, /*int*/ b, /* float * */ x )
+function set_bnd ( /*int*/ b, /* float * */ x )
 {
 	for (var i=1 ; i<=N ; i++ ) {
 		x[IX(0  ,i)] = b==1 ? -x[IX(1,i)] : x[IX(1,i)];
@@ -58,22 +72,29 @@ function set_bnd ( /* int */ N, /*int*/ b, /* float * */ x )
 	x[IX(N+1,N+1)] = 0.5*(x[IX(N,N+1)]+x[IX(N+1,N)]);
 }
 
-function lin_solve ( /* int */ N, /* int */ b, /* float * */ x, /* float * */ x0, /* float */  a, /* float */ c )
+function lin_solve ( /* int */ b, /* float * */ x, /* float * */ x0, /* float */  a, /* float */ c )
 {
-	var i, j, k;
-
 	for (var k=0 ; k<20 ; k++ ) {
 		FOR_EACH_CELL(function(i,j){
-			x[IX(i,j)] = (x0[IX(i,j)] + a*(x[IX(i-1,j)]+x[IX(i+1,j)]+x[IX(i,j-1)]+x[IX(i,j+1)]))/c;
+			var index = IX(i,j);
+			val val = 
+				x[IX(i-1,j)]
+				+ x[IX(i+1,j)]
+				+ x[IX(i,j-1)]
+				+ x[IX(i,j+1)]
+				;
+			val = x0[index] + a*(val);
+			val = val / c ;
+			x[index] = val;
 		});
-		set_bnd ( N, b, x );
+		set_bnd ( b, x );
 	}
 }
 
-function diffuse ( /* int */ N, /* int */ b, /* float * */ x, /* float * */ x0, /* float */ diff, /* float */ dt )
+function diffuse (/* int */ b, /* float * */ x, /* float * */ x0, /* float */ diff, /* float */ dt )
 {
 	var a=dt*diff*N*N;
-	lin_solve ( N, b, x, x0, a, 1+4*a );
+	lin_solve ( b, x, x0, a, 1+4*a );
 }
 
 function advect ( /* int */ N, /* int */ b, /* float * */ d, /* float * */ d0, /* float * */ u, /* float * */ v, /* float */ dt )
@@ -90,7 +111,7 @@ function advect ( /* int */ N, /* int */ b, /* float * */ d, /* float * */ d0, /
 		d[IX(i,j)] = s0*(t0*d0[IX(i0,j0)]+t1*d0[IX(i0,j1)])+
 					 s1*(t0*d0[IX(i1,j0)]+t1*d0[IX(i1,j1)]);
 	});
-	set_bnd ( N, b, d );
+	set_bnd ( b, d );
 }
 
 function project ( /* int */ N, /* float * */ u, /* float * */ v, /* float * */ p, /* float * */ div )
@@ -99,43 +120,40 @@ function project ( /* int */ N, /* float * */ u, /* float * */ v, /* float * */ 
 		div[IX(i,j)] = -0.5*(u[IX(i+1,j)]-u[IX(i-1,j)]+v[IX(i,j+1)]-v[IX(i,j-1)])/N;
 		p[IX(i,j)] = 0;
 	});
-	set_bnd ( N, 0, div ); 
-	set_bnd ( N, 0, p );
+	set_bnd ( 0, div ); 
+	set_bnd ( 0, p );
 	
-	lin_solve ( N, 0, p, div, 1, 4 );
+	lin_solve ( 0, p, div, 1, 4 );
 	
 	FOR_EACH_CELL(function(i,j){
 		u[IX(i,j)] -= 0.5*N*(p[IX(i+1,j)]-p[IX(i-1,j)]);
 		v[IX(i,j)] -= 0.5*N*(p[IX(i,j+1)]-p[IX(i,j-1)]);
 	});
-	set_bnd ( N, 1, u ); 
-	set_bnd ( N, 2, v );
+	set_bnd ( 1, u ); 
+	set_bnd ( 2, v );
 }
 
 function dens_step ( /* int */ N, /* float * */ x, /* float * */ x0, /* float * */ u, /* float * */ v, /*float*/ diff, /*float*/ dt )
 {
-	add_source ( N, x, x0, dt );
+	add_source (x, x0, dt );
 	SWAP ( x0, x ); 
-	diffuse ( N, 0, x, x0, diff, dt );
+	diffuse (0, x, x0, diff, dt );
 	SWAP ( x0, x ); 
 	advect ( N, 0, x, x0, u, v, dt );
 }
 
-function vel_step ( /*int*/ N, /*float * */ u, /*float * */ v, /* float * */ u0, /* float * */ v0, /* float */ visc, /* float */ dt )
+function vel_step (/*float * */ u, /*float * */ v, /* float * */ u_old, /* float * */ v_old, /* float */ visc, /* float */ dt )
 {
-	add_source ( N, u, u0, dt ); 
-	add_source ( N, v, v0, dt );
+	add_source (u, u_old, dt ); 
+	add_source (v, v_old, dt );
 	
-	SWAP ( u0, u ); diffuse ( N, 1, u, u0, visc, dt );
-	SWAP ( v0, v ); diffuse ( N, 2, v, v0, visc, dt );
+	diffuse (1, u_old, u, visc, dt );
+	diffuse (2, v_old, v, visc, dt );
 	
-	project ( N, u, v, u0, v0 );
+	project ( N, u_old, v_old, u, v );
 	
-	SWAP ( u0, u ); 
-	SWAP ( v0, v );
+	advect ( N, 1, u, u_old, u_old, v_old, dt ); 
+	advect ( N, 2, v, v_old, u_old, v_old, dt );
 	
-	advect ( N, 1, u, u0, u0, v0, dt ); 
-	advect ( N, 2, v, v0, u0, v0, dt );
-	
-	project ( N, u, v, u0, v0 );
+	project ( N, u, v, u_old, v_old );
 }
